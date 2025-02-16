@@ -8,7 +8,9 @@
         icon="add"
         v-if="chartCanvas.length > 0"
       />
-      <div class="row no-wrap scroll-x full-width q-pa-md" style="max-height: 300px">
+    </div>
+    <div class="row full-width">
+      <div class="row no-wrap scroll-x full-width q-pa-md" style="height: auto">
         <q-card v-for="n in chartCanvas" :key="n" class="col-auto">
           <q-card-section>
             <q-input v-model="chartLabel" label="En tête du graphe" />
@@ -27,16 +29,27 @@
               </template>
             </q-file>
           </q-card-section>
+          <q-separator color="black" inset />
+          <q-card-section>
+            <q-btn
+              label="Générer le graphe"
+              class="q-my-md"
+              @click="initChart(n)"
+              color="primary"
+            />
+          </q-card-section>
         </q-card>
 
-        <q-card v-for="(file, n) in files" :key="n">
+        <q-card v-for="(file, n) in files" :key="n" class="q-ml-md">
           <q-card-section>
-            <div class="text-body1 q-pt-md">Propriétés du fichier {{ file.name }}</div>
-            <div v-for="(item, index) in Label" :key="index">
-              <div class="text-body1 q-pt-md" v-if="files">
-                Séléctionner le paramètre de l'axe des X
-              </div>
+            <div class="text-h6 q-pt-md">Propriétés du fichier {{ file.name }}</div>
+            <div class="text-body1 q-pt-xs" v-if="files">
+              Séléctionner le paramètre de l'axe des X
+            </div>
+            <div class="q-gutter-md">
               <q-radio
+                v-for="(item, index) in Label"
+                :key="index"
                 v-model="labels"
                 checked-icon="task_alt"
                 unchecked-icon="panorama_fish_eye"
@@ -45,9 +58,12 @@
                 @update:model-value="setLabels"
               />
             </div>
+          </q-card-section>
+          <q-separator color="black" inset />
+          <q-card-section>
             <div class="q-gutter-md">
-              <q-input v-model="chartLabel1" label="Titre du graphe" />
-              <div class="text-body1 q-pt-md" v-if="files">Séléctionner le type de graphe</div>
+              <q-input v-model="chartLabel1" filled label="Titre du graphe" />
+              <div class="text-body1 q-pt-xs" v-if="files">Séléctionner le type de graphe</div>
               <q-radio
                 v-model="chartType"
                 checked-icon="task_alt"
@@ -69,17 +85,20 @@
                 val="doghnut"
                 label="Circulaire"
               />
-              <div class="text-body1 q-pt-md" v-if="files">Séléctionner la couleur du graphe</div>
-              <q-input filled v-model="color">
-                <template v-slot:append>
-                  <q-icon name="colorize" class="cursor-pointer">
-                    <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                      <q-color v-model="chartColor" />
-                    </q-popup-proxy>
-                  </q-icon>
-                </template>
-              </q-input>
             </div>
+          </q-card-section>
+          <q-separator color="black" inset />
+          <q-card-section>
+            <div class="text-body1 q-pt-xs" v-if="files">Séléctionner la couleur du graphe</div>
+            <q-input filled v-model="color">
+              <template v-slot:append>
+                <q-icon name="colorize" class="cursor-pointer">
+                  <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                    <q-color v-model="chartColor" />
+                  </q-popup-proxy>
+                </q-icon>
+              </template>
+            </q-input>
           </q-card-section>
         </q-card>
       </div>
@@ -152,8 +171,8 @@ export default {
       }
       //if(this.files.length>=1)
     },
-    initChart() {
-      this.chartCanvas = document.getElementById('chartCanva')
+    initChart(chartNumber = 0) {
+      this.chartCanvas = document.getElementById('chartCanva_' + chartNumber)
       new Chart(this.chartCanvas, {
         type: 'line',
         data: {

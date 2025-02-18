@@ -3,7 +3,7 @@
   <q-page class="q-pa-md">
     <div class="q-gutter-md" style="max-width: 300px; padding-left: 30px">
       <q-btn
-        label="Ajouter un nouveau graphe"
+        label="Ajouter un nouveau conteneur"
         @click="newCanvas"
         icon="add"
         v-if="chartCanvas.length > 0"
@@ -47,39 +47,41 @@
               Séléctionner le paramètre de l'axe des X
             </div>
             <div class="q-gutter-md">
+              <!-- <template v-for="(items, index) in Labels[n]" :key="index"> -->
               <q-radio
-                v-for="(item, index) in Label"
+                v-for="(item, index) in Labels[n]"
                 :key="index"
                 v-model="labels"
                 checked-icon="task_alt"
                 unchecked-icon="panorama_fish_eye"
                 :val="item"
                 :label="item"
-                @update:model-value="setLabels"
+                @update:model-value="setLabels(item, n)"
               />
+              <!--  </template> -->
             </div>
           </q-card-section>
           <q-separator color="black" inset />
           <q-card-section>
             <div class="q-gutter-md">
-              <q-input v-model="chartLabel1" filled label="Titre du graphe" />
+              <q-input v-model="chartsLabels[n]" filled label="Titre du graphe" />
               <div class="text-body1 q-pt-xs" v-if="files">Séléctionner le type de graphe</div>
               <q-radio
-                v-model="chartType"
+                v-model="chartType[n]"
                 checked-icon="task_alt"
                 unchecked-icon="panorama_fish_eye"
                 val="line"
                 label="Courbe"
               />
               <q-radio
-                v-model="chartType"
+                v-model="chartType[n]"
                 checked-icon="task_alt"
                 unchecked-icon="panorama_fish_eye"
                 val="histo"
                 label="Histogramme"
               />
               <q-radio
-                v-model="chartType"
+                v-model="chartType[n]"
                 checked-icon="task_alt"
                 unchecked-icon="panorama_fish_eye"
                 val="doghnut"
@@ -94,7 +96,7 @@
               <template v-slot:append>
                 <q-icon name="colorize" class="cursor-pointer">
                   <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                    <q-color v-model="chartColor" />
+                    <q-color v-model="chartColors[n]" />
                   </q-popup-proxy>
                 </q-icon>
               </template>
@@ -139,14 +141,14 @@ export default {
       chartLabel: null,
       title: null,
       chartCanvas: [1],
-      Label: [],
+      Labels: [],
       xLabels: [],
       fileContent: [],
-      chartData: [],
-      labels: null,
+      chartsData: [],
+      labels: [],
       chartType: 'line',
-      chartColor: null,
-      chartLabel1: null,
+      chartColors: null,
+      chartsLabels: null,
     }
   },
 
@@ -155,16 +157,28 @@ export default {
       this.chartCanvas.push(this.chartCanvas.length + 1)
       console.log('new chart added: ', this.chartCanvas)
     },
+    initVars() {
+      this.Labels = Array(this.files.length)
+      this.xLabels = Array(this.files.length)
+      this.chartColors = Array(this.files.length)
+      this.chartsLabels = Array(this.files.length)
+      this.chartType = Array(this.files.length)
+      this.chartsData = Array(this.files.length)
+      this.fileContent = Array(this.files.length)
+    },
     selectFile() {
-      for (const file of this.files) {
+      this.initVars()
+      for (const [file, index] of this.files) {
+        console.log('file index: ', index)
+
         let fr = new FileReader()
         fr.onload = (e) => {
           this.fileContent = e.target.result.split('\n')
           this.title =
-            this.fileContent.length > 0
-              ? this.fileContent[0]
+            this.fileContent[index].length > 0
+              ? this.fileContent[index][0]
               : 'Aucune donnée trouvée. Fichier vide'
-          this.Label = this.title ? this.title.split(',') : []
+          this.Labels[index] = this.title ? this.title.split(',') : []
           console.log('file content: ', this.fileContent)
         }
         fr.readAsText(file)
@@ -194,23 +208,24 @@ export default {
       })
     },
 
-    setLabels(value) {
-      this.xLabels = []
-      this.chartData = []
-      let valIndex = this.Label.indexOf(value)
+    setLabels(value, index) {
+      this.xLabels[index] = []
+      this.chartsData[index] = []
+      let valIndex = this.Labels[index].indexOf(value)
       console.log('Label value: ', value, ' val index: ', valIndex)
-      if (this.fileContent.length > 0) {
-        for (let index = 1; index < this.fileContent.length; index++) {
+      //if (this.fileContent.length > 0) {
+      for (let i = 0; i < this.files.length; i++)
+        for (let index = 1; index < this.fileContent[i].length; index++) {
           const element = this.fileContent[index].split(',')
-          this.xLabels.push(element[valIndex])
+          this.xLabels[index].push(element[valIndex])
           let yEl = element.filter((el) => el !== element[valIndex])[0]
-          this.chartData.push(Number.parseInt(yEl))
+          this.chartData[index].push(Number.parseInt(yEl))
         }
 
-        console.log('chartData: ', this.chartData, '\nxLabel: ', this.xLabels)
+      console.log('chartData: ', this.chartData, '\nxLabel: ', this.xLabels)
 
-        this.initChart()
-      }
+      //this.initChart()
+      //}
     },
     exportChart() {
       console.log('exporting chart to pdf')

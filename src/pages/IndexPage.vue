@@ -120,14 +120,14 @@
                 v-model="chartType[n]"
                 checked-icon="task_alt"
                 unchecked-icon="panorama_fish_eye"
-                val="histo"
+                val="bar"
                 label="Histogramme"
               />
               <q-radio
                 v-model="chartType[n]"
                 checked-icon="task_alt"
                 unchecked-icon="panorama_fish_eye"
-                val="doghnut"
+                val="doughnut"
                 label="Circulaire"
               />
             </div>
@@ -269,7 +269,7 @@ export default {
     initChart(id = 0) {
       this.chartCanvas = document.getElementById('chartCanva_' + id)
       new Chart(this.chartCanvas, {
-        type: 'line',
+        type: this.chartType[id],
         options: {
           plugins: {
             title: this.chartLabel[id],
@@ -283,9 +283,9 @@ export default {
               label: this.chartsLabels[id],
               fill: false,
               lineTension: 0.4,
-              backgroundColor: '#812691',
-              borderColor: '#21ba45',
-              data: this.chartData,
+              backgroundColor: this.chartColors[id],
+              borderColor: this.chartColors[id],
+              data: this.chartData[id],
               borderWidth: 1,
             },
           ],
